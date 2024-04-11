@@ -7,6 +7,14 @@ dotnet tool install --global dotnet-ef
 dotnet ef database update
 ```
 
+To create the migration and generate the sql
+```powershell
+cd src/EntityFrameworkCore
+dotnet ef migrations add "Initial"
+dotnet ef database update --project .\Relationships\Relationships.csproj
+dotnet ef migrations script --no-build --idempotent --project .\Relationships\Relationships.csproj --output sql/table/EFCore.migration.sql
+```
+
 ## Relationships
 
 Shows.....
