@@ -2,53 +2,71 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Relationships.Data;
+using Relationships.Entities;
 
-namespace Acme.ShoppingCart.WebApi {
+namespace Relationships {
     /// <summary>
     /// Program
     /// </summary>
-    public class Program {
+    public static class Program {
         public static Task<int> Main(string[] args) {
-            var loggerFactory = LoggerFactory.Create(builder => {
-                builder
-                    .AddFilter((category, level) =>
-                        category == DbLoggerCategory.Database.Command.Name
-                        && level == LogLevel.Information)
-                    .AddConsole();
-            });
-            var logger = loggerFactory.CreateLogger<Program>();
+            //var loggerFactory = LoggerFactory.Create(builder => {
+            //    builder
+            //        .AddFilter((category, level) =>
+            //            category == DbLoggerCategory.Database.Command.Name
+            //            && level == LogLevel.Information)
+            //        .AddConsole();
+            //});
+            //var logger = loggerFactory.CreateLogger<Program>();
 
-            using (var db = new DatabaseContext(loggerFactory)) {
+            Example1();
+
+            return Task.FromResult(0);
+        }
+
+        private static void Example1() {
+            using (var db = new DatabaseContext()) {
                 // Create
-                Console.WriteLine("Inserting a new blog");
-                db.Add(new Blog { Url = "https://cortside.com" });
+                Console.WriteLine("Inserting a new Order");
+                db.Add(new Order(new Customer("Elmer", "Fudd", "elmer@fudd.org"), "123 Main", "Salt Lake City:", "UT", "USA", "84123-1000"));
                 db.SaveChanges();
 
                 // Read
-                Console.WriteLine("Querying for a blog");
-                var blog = db.Blogs
-                    .OrderBy(b => b.BlogId)
+                Console.WriteLine("Querying for an Order");
+                var order = db.Orders
+                    .Include(x => x.Address)
+                    .Include(x => x.Items)
+                    .OrderBy(b => b.OrderId)
                     .First();
 
-                // Update and add a post
-                Console.WriteLine("Updating the blog and adding a post");
-                blog.Url = "https://cortside.com/tags/EF-Core";
-                blog.Posts.Add(new Post { Title = "EFCore Relationships", Content = "Examples of EFCore relationships" });
+                // Update and add an item
+                Console.WriteLine("Updating the order and adding an item");
+                order.UpdateAddress("234 State", "Salt Lake City:", "UT", "USA", "84123-1000");
+                order.AddItem("ABC123", 1, 1.99M);
                 db.SaveChanges();
 
-                // Add another post
-                Console.WriteLine("Updating the blog and adding a post");
-                blog.Posts.Add(new Post { Title = "Database operation expected to affect", Content = "What Troy said....." });
+                // Add another item
+                Console.WriteLine("Adding another item");
+                order.AddItem("DEF456", 2, 2.97M);
                 db.SaveChanges();
 
-                // Delete
-                Console.WriteLine("Delete the blog");
-                db.Remove(blog);
-                db.SaveChanges();
+                Console.WriteLine("there are " + db.Orders.Count().ToString() + " orders in the db");
+                Console.WriteLine("there are " + db.Customers.Count().ToString() + " customers in the db");
+
+                // Delete -- explicitly deleting the children first
+                Console.WriteLine("Delete the order");
+                db.RemoveRange(order.Items);
+                db.Remove(order);
+                try {
+                    db.SaveChanges();
+                } catch (Exception ex) {
+                    Console.WriteLine("can't delete blog without deleting all posts first, violation of FK");
+                }
+
+                Console.WriteLine("there are " + db.Orders.Count().ToString() + " orders in the db");
+                Console.WriteLine("there are " + db.Customers.Count().ToString() + " customers in the db");
             }
-
-            return Task.FromResult<int>(0);
         }
     }
 }

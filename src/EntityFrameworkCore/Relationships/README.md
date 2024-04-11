@@ -10,3 +10,10 @@ dotnet ef database update
 ## Relationships
 
 Shows.....
+
+
+## TODO
+
+* how to handle 1:1 relationships
+* how to handle 1:many relationships
+* how to handle many:many relationships
