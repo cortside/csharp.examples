@@ -18,7 +18,6 @@ namespace Relationships.Entities {
             OrderResourceId = Guid.NewGuid();
             Customer = customer;
             Address = new Address(street, city, state, country, zipCode);
-            items = new List<OrderItem>();
         }
 
         [Key]
@@ -45,17 +44,17 @@ namespace Relationships.Entities {
         public DateTime? LastNotified { get; private set; }
 
         // expose items as a read only collection so that the collection cannot be manipulated without going through order
-        private readonly List<OrderItem> items = new List<OrderItem>();
+        private readonly List<OrderItem> items = [];
         public virtual IReadOnlyList<OrderItem> Items => items;
 
-        public void AddItem(string sku, int quantity, decimal unitPrice) {
+        public void AddItem(Item item, int quantity) {
             // validation goes here
 
-            items.Add(new OrderItem(sku, quantity, unitPrice));
+            items.Add(new OrderItem(item, quantity));
         }
 
         public void UpdateAddress(string street, string city, string state, string country, string zipCode) {
-            //AssertOpenOrder();
+            // validation goes here
 
             Address.Update(street, city, state, country, zipCode);
         }

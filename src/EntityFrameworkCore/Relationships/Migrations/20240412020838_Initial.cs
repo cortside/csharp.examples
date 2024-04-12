@@ -45,6 +45,36 @@ namespace Relationships.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Item",
+                columns: table => new
+                {
+                    ItemId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ItemResourceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Sku = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", maxLength: 250, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Item", x => x.ItemId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Supplier",
+                columns: table => new
+                {
+                    SupplierId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SupplierResourceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Supplier", x => x.SupplierId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Order",
                 columns: table => new
                 {
@@ -73,19 +103,45 @@ namespace Relationships.Migrations
                 comment: "Orders");
 
             migrationBuilder.CreateTable(
+                name: "ItemSupplier",
+                columns: table => new
+                {
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    SupplierId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ItemSupplier", x => new { x.ItemId, x.SupplierId });
+                    table.ForeignKey(
+                        name: "FK_ItemSupplier_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "Item",
+                        principalColumn: "ItemId");
+                    table.ForeignKey(
+                        name: "FK_ItemSupplier_SupplierId",
+                        column: x => x.SupplierId,
+                        principalTable: "Supplier",
+                        principalColumn: "SupplierId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OrderItem",
                 columns: table => new
                 {
                     OrderItemId = table.Column<int>(type: "int", nullable: false, comment: "Primary Key")
                         .Annotation("SqlServer:Identity", "1, 1"),
                     OrderId = table.Column<int>(type: "int", nullable: false),
-                    Sku = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true, comment: "Item Sku"),
-                    Quantity = table.Column<int>(type: "int", nullable: false, comment: "Quantity of Sku"),
-                    UnitPrice = table.Column<decimal>(type: "money", nullable: false, comment: "Per quantity price")
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false, comment: "Quantity of Sku")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_OrderItem", x => x.OrderItemId);
+                    table.ForeignKey(
+                        name: "FK_OrderItem_Item_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "Item",
+                        principalColumn: "ItemId");
                     table.ForeignKey(
                         name: "FK_OrderItem_Order_OrderId",
                         column: x => x.OrderId,
@@ -93,6 +149,11 @@ namespace Relationships.Migrations
                         principalColumn: "OrderId");
                 },
                 comment: "Items that belong to an Order");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ItemSupplier_SupplierId",
+                table: "ItemSupplier",
+                column: "SupplierId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Order_AddressId",
@@ -111,6 +172,11 @@ namespace Relationships.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderItem_ItemId",
+                table: "OrderItem",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderItem_OrderId",
                 table: "OrderItem",
                 column: "OrderId");
@@ -120,7 +186,16 @@ namespace Relationships.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "ItemSupplier");
+
+            migrationBuilder.DropTable(
                 name: "OrderItem");
+
+            migrationBuilder.DropTable(
+                name: "Supplier");
+
+            migrationBuilder.DropTable(
+                name: "Item");
 
             migrationBuilder.DropTable(
                 name: "Order");

@@ -22,6 +22,21 @@ namespace Relationships.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ItemSupplier", b =>
+                {
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ItemId", "SupplierId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("ItemSupplier");
+                });
+
             modelBuilder.Entity("Relationships.Entities.Address", b =>
                 {
                     b.Property<int>("AddressId")
@@ -83,6 +98,34 @@ namespace Relationships.Migrations
                     b.ToTable("Customer");
                 });
 
+            modelBuilder.Entity("Relationships.Entities.Item", b =>
+                {
+                    b.Property<int>("ItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ItemId"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("ItemResourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Sku")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasMaxLength(250)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("ItemId");
+
+                    b.ToTable("Item");
+                });
+
             modelBuilder.Entity("Relationships.Entities.Order", b =>
                 {
                     b.Property<int>("OrderId")
@@ -135,6 +178,9 @@ namespace Relationships.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
 
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
@@ -142,16 +188,9 @@ namespace Relationships.Migrations
                         .HasColumnType("int")
                         .HasComment("Quantity of Sku");
 
-                    b.Property<string>("Sku")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)")
-                        .HasComment("Item Sku");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("money")
-                        .HasComment("Per quantity price");
-
                     b.HasKey("OrderItemId");
+
+                    b.HasIndex("ItemId");
 
                     b.HasIndex("OrderId");
 
@@ -159,6 +198,43 @@ namespace Relationships.Migrations
                         {
                             t.HasComment("Items that belong to an Order");
                         });
+                });
+
+            modelBuilder.Entity("Relationships.Entities.Supplier", b =>
+                {
+                    b.Property<int>("SupplierId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SupplierId"));
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("SupplierResourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("SupplierId");
+
+                    b.ToTable("Supplier");
+                });
+
+            modelBuilder.Entity("ItemSupplier", b =>
+                {
+                    b.HasOne("Relationships.Entities.Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_ItemSupplier_ItemId");
+
+                    b.HasOne("Relationships.Entities.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_ItemSupplier_SupplierId");
                 });
 
             modelBuilder.Entity("Relationships.Entities.Order", b =>
@@ -180,11 +256,19 @@ namespace Relationships.Migrations
 
             modelBuilder.Entity("Relationships.Entities.OrderItem", b =>
                 {
+                    b.HasOne("Relationships.Entities.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Relationships.Entities.Order", null)
                         .WithMany("Items")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Item");
                 });
 
             modelBuilder.Entity("Relationships.Entities.Order", b =>

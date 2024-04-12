@@ -25,11 +25,6 @@ namespace Relationships.Entities {
 
         public void Update(string firstName, string lastName, string email) {
             // validation
-            //var messages = new MessageList();
-            //messages.Aggregate(() => string.IsNullOrWhiteSpace(firstName) || firstName.Length < 2, () => new InvalidValueError(nameof(firstName), firstName));
-            //messages.Aggregate(() => string.IsNullOrWhiteSpace(lastName) || lastName.Length < 2, () => new InvalidValueError(nameof(lastName), lastName));
-            //messages.Aggregate(() => string.IsNullOrWhiteSpace(email) || !Regex.IsMatch(email, regex, RegexOptions.IgnoreCase), () => new InvalidValueError(nameof(email), email));
-            //messages.ThrowIfAny<ValidationListException>();
 
             FirstName = firstName;
             LastName = lastName;

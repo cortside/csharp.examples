@@ -13,7 +13,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240411204710_Initial'
+    WHERE [MigrationId] = N'20240412020838_Initial'
 )
 BEGIN
     CREATE TABLE [Address] (
@@ -30,7 +30,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240411204710_Initial'
+    WHERE [MigrationId] = N'20240412020838_Initial'
 )
 BEGIN
     CREATE TABLE [Customer] (
@@ -46,7 +46,37 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240411204710_Initial'
+    WHERE [MigrationId] = N'20240412020838_Initial'
+)
+BEGIN
+    CREATE TABLE [Item] (
+        [ItemId] int NOT NULL IDENTITY,
+        [ItemResourceId] uniqueidentifier NOT NULL,
+        [Sku] nvarchar(50) NULL,
+        [Description] nvarchar(50) NULL,
+        [UnitPrice] decimal(18,2) NOT NULL,
+        CONSTRAINT [PK_Item] PRIMARY KEY ([ItemId])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240412020838_Initial'
+)
+BEGIN
+    CREATE TABLE [Supplier] (
+        [SupplierId] int NOT NULL IDENTITY,
+        [SupplierResourceId] uniqueidentifier NOT NULL,
+        [Name] nvarchar(50) NULL,
+        CONSTRAINT [PK_Supplier] PRIMARY KEY ([SupplierId])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240412020838_Initial'
 )
 BEGIN
     CREATE TABLE [Order] (
@@ -78,16 +108,31 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240411204710_Initial'
+    WHERE [MigrationId] = N'20240412020838_Initial'
+)
+BEGIN
+    CREATE TABLE [ItemSupplier] (
+        [ItemId] int NOT NULL,
+        [SupplierId] int NOT NULL,
+        CONSTRAINT [PK_ItemSupplier] PRIMARY KEY ([ItemId], [SupplierId]),
+        CONSTRAINT [FK_ItemSupplier_ItemId] FOREIGN KEY ([ItemId]) REFERENCES [Item] ([ItemId]),
+        CONSTRAINT [FK_ItemSupplier_SupplierId] FOREIGN KEY ([SupplierId]) REFERENCES [Supplier] ([SupplierId])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240412020838_Initial'
 )
 BEGIN
     CREATE TABLE [OrderItem] (
         [OrderItemId] int NOT NULL IDENTITY,
         [OrderId] int NOT NULL,
-        [Sku] nvarchar(10) NULL,
+        [ItemId] int NOT NULL,
         [Quantity] int NOT NULL,
-        [UnitPrice] money NOT NULL,
         CONSTRAINT [PK_OrderItem] PRIMARY KEY ([OrderItemId]),
+        CONSTRAINT [FK_OrderItem_Item_ItemId] FOREIGN KEY ([ItemId]) REFERENCES [Item] ([ItemId]),
         CONSTRAINT [FK_OrderItem_Order_OrderId] FOREIGN KEY ([OrderId]) REFERENCES [Order] ([OrderId])
     );
     DECLARE @defaultSchema AS sysname;
@@ -97,18 +142,23 @@ BEGIN
     EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE', N'OrderItem';
     SET @description = N'Primary Key';
     EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE', N'OrderItem', 'COLUMN', N'OrderItemId';
-    SET @description = N'Item Sku';
-    EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE', N'OrderItem', 'COLUMN', N'Sku';
     SET @description = N'Quantity of Sku';
     EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE', N'OrderItem', 'COLUMN', N'Quantity';
-    SET @description = N'Per quantity price';
-    EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE', N'OrderItem', 'COLUMN', N'UnitPrice';
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240411204710_Initial'
+    WHERE [MigrationId] = N'20240412020838_Initial'
+)
+BEGIN
+    CREATE INDEX [IX_ItemSupplier_SupplierId] ON [ItemSupplier] ([SupplierId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240412020838_Initial'
 )
 BEGIN
     CREATE INDEX [IX_Order_AddressId] ON [Order] ([AddressId]);
@@ -117,7 +167,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240411204710_Initial'
+    WHERE [MigrationId] = N'20240412020838_Initial'
 )
 BEGIN
     CREATE INDEX [IX_Order_CustomerId] ON [Order] ([CustomerId]);
@@ -126,7 +176,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240411204710_Initial'
+    WHERE [MigrationId] = N'20240412020838_Initial'
 )
 BEGIN
     CREATE UNIQUE INDEX [IX_Order_OrderResourceId] ON [Order] ([OrderResourceId]);
@@ -135,7 +185,16 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240411204710_Initial'
+    WHERE [MigrationId] = N'20240412020838_Initial'
+)
+BEGIN
+    CREATE INDEX [IX_OrderItem_ItemId] ON [OrderItem] ([ItemId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240412020838_Initial'
 )
 BEGIN
     CREATE INDEX [IX_OrderItem_OrderId] ON [OrderItem] ([OrderId]);
@@ -144,11 +203,11 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240411204710_Initial'
+    WHERE [MigrationId] = N'20240412020838_Initial'
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240411204710_Initial', N'8.0.2');
+    VALUES (N'20240412020838_Initial', N'8.0.2');
 END;
 GO
 

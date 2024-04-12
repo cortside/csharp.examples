@@ -7,15 +7,14 @@ namespace Relationships.Entities {
     [Comment("Items that belong to an Order")]
     public class OrderItem {
         protected OrderItem() {
-            // Required by EF as it doesn't know about CatalogItem
+            // Required by EF as it doesn't know about Item
         }
 
-        public OrderItem(string sku, int quantity, decimal unitPrice) {
+        public OrderItem(Item item, int quantity) {
             // do validation here
 
-            Sku = sku;
+            Item = item;
             Quantity = quantity;
-            UnitPrice = unitPrice;
         }
 
         [Key]
@@ -29,15 +28,14 @@ namespace Relationships.Entities {
         [ForeignKey("OrderId")]
         public int OrderId { get; private set; }
 
-        [StringLength(10)]
-        [Comment("Item Sku")]
-        public string Sku { get; private set; }
+        /// <summary>
+        /// Use of Required attribute to make sure that the inferred ItemId is not nullable
+        /// </summary>
+        [Required]
+        [ForeignKey("ItemId")]
+        public Item Item { get; private set; }
 
         [Comment("Quantity of Sku")]
         public int Quantity { get; private set; }
-
-        [Column(TypeName = "money")]
-        [Comment("Per quantity price")]
-        public decimal UnitPrice { get; private set; }
     }
 }
