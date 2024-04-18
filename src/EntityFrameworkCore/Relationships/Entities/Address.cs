@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
 
 namespace Relationships.Entities {
     [Table("Address")]
-    public class Address {
-        protected Address() { }
+    public class Address : IValueObject {
+        protected Address() {
+        }
 
         public Address(string street, string city, string state, string country, string zipcode) {
             Street = street;
@@ -16,7 +18,11 @@ namespace Relationships.Entities {
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int AddressId { get; private set; }
+        // TODO: using internal instead of private so that context can set it
+        public int AddressId { get; internal set; }
+
+        [StringLength(125)]
+        public string UniqueKey { get => GetUniqueKey(this); set => _ = value; }
 
         [StringLength(50)]
         public string Street { get; private set; }
@@ -43,6 +49,21 @@ namespace Relationships.Entities {
             State = state;
             Country = country;
             ZipCode = zipcode;
+        }
+
+        public static string GetUniqueKey(Address address) {
+            if (address == null) {
+                return "null";
+            }
+
+            var sb = new StringBuilder();
+            sb.Append(address.Street ?? string.Empty).Append('|');
+            sb.Append(address.City ?? string.Empty).Append('|');
+            sb.Append(address.State ?? string.Empty).Append('|');
+            sb.Append(address.ZipCode ?? string.Empty).Append('|');
+            sb.Append(address.Country ?? string.Empty).Append('|');
+
+            return sb.ToString();
         }
     }
 }

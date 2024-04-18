@@ -25,6 +25,7 @@ namespace Relationships.Data {
                 sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             optionsBuilder.UseLoggerFactory(loggerFactory);
+            optionsBuilder.AddInterceptors(new ValueObjectInterceptor());
 
             // NOT safe for production
             optionsBuilder.EnableSensitiveDataLogging(true);
@@ -60,5 +61,28 @@ namespace Relationships.Data {
                 fk.DeleteBehavior = DeleteBehavior.NoAction;
             }
         }
+
+        //public override int SaveChanges() {
+        //    ChangeTracker.DetectChanges();
+        //    var modified = ChangeTracker.Entries().Where(x => x.Entity is IValueObject && (x.State == EntityState.Modified || x.State == EntityState.Added));
+
+        //    foreach (var entry in modified) {
+        //        if (entry.Entity is Address) {
+        //            var key = ((IValueObject)entry.Entity).UniqueKey;
+        //            var dbset = this.Set<Address>();
+        //            var entity = dbset.AsNoTracking().FirstOrDefault(x => x.UniqueKey == key);
+        //            if (entity != null) {
+        //                entry.State = EntityState.Detached;
+        //                entry.CurrentValues.SetValues(entity);
+        //                //((Address)entry.Entity).AddressId = entity.AddressId;
+        //                //entry.State = EntityState.Unchanged;
+        //                Console.Out.WriteLine(((Address)entry.Entity).AddressId);
+        //                entry.Reload();
+        //            }
+        //        }
+        //    }
+
+        //    return base.SaveChanges();
+        //}
     }
 }

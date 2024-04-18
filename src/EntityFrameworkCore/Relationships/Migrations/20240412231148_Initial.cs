@@ -17,6 +17,7 @@ namespace Relationships.Migrations
                 {
                     AddressId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    UniqueKey = table.Column<string>(type: "nvarchar(125)", maxLength: 125, nullable: true),
                     Street = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     State = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: true),

@@ -61,6 +61,10 @@ namespace Relationships.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("UniqueKey")
+                        .HasMaxLength(125)
+                        .HasColumnType("nvarchar(125)");
+
                     b.Property<string>("ZipCode")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");

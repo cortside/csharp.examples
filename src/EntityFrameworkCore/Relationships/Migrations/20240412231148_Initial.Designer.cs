@@ -12,7 +12,7 @@ using Relationships.Data;
 namespace Relationships.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240412020838_Initial")]
+    [Migration("20240412231148_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -63,6 +63,10 @@ namespace Relationships.Migrations
                     b.Property<string>("Street")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UniqueKey")
+                        .HasMaxLength(125)
+                        .HasColumnType("nvarchar(125)");
 
                     b.Property<string>("ZipCode")
                         .HasMaxLength(10)
