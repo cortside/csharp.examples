@@ -9,8 +9,8 @@ namespace Relationships.Data {
     public class DatabaseContext : DbContext {
         private readonly ILoggerFactory loggerFactory;
 
-        public DatabaseContext() {
-            loggerFactory = new NullLoggerFactory();
+        public DatabaseContext(ILoggerFactory loggerFactory = null) {
+            this.loggerFactory = loggerFactory ?? new NullLoggerFactory();
         }
 
         public DbSet<Supplier> Suppliers { get; set; }

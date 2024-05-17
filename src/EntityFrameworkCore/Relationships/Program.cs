@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Relationships.Data;
 using Relationships.Entities;
 
@@ -11,12 +12,44 @@ namespace Relationships {
     /// </summary>
     public static class Program {
         public static Task<int> Main(string[] args) {
-            Example1();
+            var loggerFactory = LoggerFactory.Create(builder => {
+                builder.AddFilter("xMicrosoft", LogLevel.Warning)
+                    .AddFilter("xSystem", LogLevel.Warning)
+                    .AddFilter("xSampleApp.Program", LogLevel.Debug)
+                    .AddConsole();
+            });
+
+            Example0(loggerFactory);
+            //Example1(loggerFactory);
             return Task.FromResult(0);
         }
 
-        private static void Example1() {
-            using (var db = new DatabaseContext()) {
+        private static void Example0(ILoggerFactory loggerFactory) {
+            using (var db = new DatabaseContext(loggerFactory)) {
+                SeedSuppliers(db);
+                SeedItems(db);
+
+                // Create
+                Console.WriteLine("Inserting a new Order");
+                db.Add(new Order(new Customer("Elmer", "Fudd", "elmer@fudd.org"), "123 Main", "Salt Lake City:", "UT",
+                    "USA", "84123-1000"));
+                db.SaveChanges();
+
+                // Read
+                Console.WriteLine("Querying for an Order");
+                var sort = new SortField() { FieldName = "Status", SortDirection = SortDirection.Ascending };
+
+                var order = db.Orders
+                    .Include(x => x.Address)
+                    .Include(x => x.Items)
+                    .ToSortedQuery("Address.ZipCode,Status")
+                    //.OrderByDynamic(sort)
+                    .First();
+            }
+        }
+
+        private static void Example1(ILoggerFactory loggerFactory) {
+            using (var db = new DatabaseContext(loggerFactory)) {
                 SeedSuppliers(db);
                 SeedItems(db);
 
@@ -31,6 +64,7 @@ namespace Relationships {
                     .Include(x => x.Address)
                     .Include(x => x.Items)
                     .OrderBy(b => b.OrderId)
+                    //.OrderBy(b => "SAC,TIL,RIL,ZIL,YES".IndexOf(b.Status.ToString()))
                     .First();
 
                 // Update and add an item
@@ -45,6 +79,13 @@ namespace Relationships {
                 item = db.Items.First(x => x.Sku == "DEF456");
                 order.AddItem(item, 2);
                 db.SaveChanges();
+
+                Console.WriteLine("Get singular orderItem by it's id");
+                var orderItem = order.Items.First(x => x.Item.ItemId == item.ItemId);
+                var items = db.Orders
+                    .Include(x => x.Items.Where(i => i.OrderItemId == orderItem.OrderItemId))
+                    .OrderBy(x => x.OrderId)
+                    .FirstOrDefault(x => x.Items.Any(i => i.OrderItemId == orderItem.OrderItemId));
 
                 Console.WriteLine("there are " + db.Orders.Count().ToString() + " orders in the db");
                 Console.WriteLine("there are " + db.Customers.Count().ToString() + " customers in the db");

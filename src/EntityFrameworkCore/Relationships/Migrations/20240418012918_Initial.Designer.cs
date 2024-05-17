@@ -12,7 +12,7 @@ using Relationships.Data;
 namespace Relationships.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240412020838_Initial")]
+    [Migration("20240418012918_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

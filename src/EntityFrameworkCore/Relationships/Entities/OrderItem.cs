@@ -25,7 +25,7 @@ namespace Relationships.Entities {
         /// <summary>
         /// OrderId added explicitly here so that it does not become nullable when inferred by relationships
         /// </summary>
-        [ForeignKey("OrderId")]
+        [ForeignKey(nameof(OrderId))]
         public int OrderId { get; private set; }
 
         /// <summary>

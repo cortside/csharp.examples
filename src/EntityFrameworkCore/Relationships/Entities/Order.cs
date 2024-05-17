@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Relationships.Enumerations;
 
 namespace Relationships.Entities {
-    [Index(nameof(OrderResourceId), IsUnique = true)]
+    [Microsoft.EntityFrameworkCore.Index(nameof(OrderResourceId), IsUnique = true)]
     [Table("Order")]
     [Comment("Orders")]
     public class Order {
