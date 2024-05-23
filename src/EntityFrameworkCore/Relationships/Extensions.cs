@@ -1,20 +1,25 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Relationships {
-    public enum SortDirection {
-        Ascending,
-        Descending
-    }
-    public class SortField {
-        public string FieldName { get; internal set; }
-        public SortDirection SortDirection { get; internal set; }
-    }
-
     public static class Extensions {
+
+
+
+        //[ExpressionMethod("InImpl")]
+        //public static bool In<T>(this T item, IEnumerable<T> items) {
+        //    return items.Contains(item); // this code will run if we execute the method locally
+        //}
+
+        //public static Expression<Func<T, IEnumerable<T>, bool>> InImpl<T>() {
+        //    // LINQ to DB will translate this expression into SQL
+        //    // (it knows out of the box how to translate Contains()
+        //    return (item, items) => items.Contains(item);
+        //}
+
+
 
         public static IQueryable<T> ToPagedQuery<T>(this IQueryable<T> query, int page, int pageSize, int skipAdditionalRowsCount = 0) {
             return query.Skip(pageSize * (page - 1) + skipAdditionalRowsCount).Take(pageSize);
@@ -34,47 +39,29 @@ namespace Relationships {
         /// <param name="sortParameters">the name of the sort parameters</param>
         /// <returns></returns>
         public static IOrderedQueryable<T> ToSortedQuery<T>(this IQueryable<T> query, string sortParameters) {
-            sortParameters = sortParameters.Replace("+", "");
-            string[] parameters = sortParameters.Split(',');
+            var parameters = SortField.Parse(sortParameters);
 
             var expression = query.Expression;
             for (var index = 0; index < parameters.Length; index++) {
                 var sortParameter = parameters[index];
-                if (string.IsNullOrEmpty(sortParameter)) {
-                    continue;
-                }
-                string orderType = sortParameter[..1];
+                //var method = sortParameter.GetOrderMethod(index);
 
-                var method = GetOrderMethod(index, orderType);
-
-                string propertyName = string.Equals(orderType, "-", StringComparison.OrdinalIgnoreCase)
-                    ? sortParameter[1..]
-                    : sortParameter;
-
-                var propertyLambda = GetPropertyLambda<T>(propertyName);
+                var propertyLambda = GetPropertyLambda<T>(sortParameter.Property, sortParameter.Arguments);
 
                 var exp = propertyLambda.Item1;
                 var t = propertyLambda.Item2;
 
-                //if (t.IsEnum) {
-                //    t = typeof(int);
-                //    exp = GetExpressionForEnumOrdering<T>(exp);
-                //} else if (t == typeof(bool)) {
-                //    var queryParameterExpression = Expression.Parameter(typeof(T), "x");
-                //    t = typeof(string);
-                //    exp = GetExpressionForBoolOrdering(exp, queryParameterExpression);
-                //} else
-
+                var method = sortParameter.GetOrderMethod(index);
                 if (t.Name.Contains("nullable", StringComparison.CurrentCultureIgnoreCase)) {
                     // first add an expression where we order by the property.HasValue
-                    var nullCheckProperty = GetPropertyLambda<T>($"{propertyName}.HasValue");
+                    var nullCheckProperty = GetPropertyLambda<T>($"{sortParameter.Property}.HasValue", sortParameter.Arguments);
                     expression = Expression.Call(typeof(Queryable), method, new Type[] { query.ElementType, nullCheckProperty.Item2 },
                         expression,
                         Expression.Quote(nullCheckProperty.Item1));
 
                     // since we may have taken the first order position by inserting this new one
                     // update the order method
-                    method = GetOrderMethod(index + 1, orderType);
+                    //method = sortParameter.GetOrderMethod(index + 1);
                 }
 
                 expression = Expression.Call(typeof(Queryable), method,
@@ -84,121 +71,98 @@ namespace Relationships {
             return (IOrderedQueryable<T>)query.Provider.CreateQuery<T>(expression);
         }
 
-        private static string GetOrderMethod(int index, string orderType) {
-            if (string.Equals(orderType, "-", StringComparison.OrdinalIgnoreCase)) {
-                if (index == 0) {
-                    return "OrderByDescending";
-                } else {
-                    return "ThenByDescending";
-                }
-            } else if (index == 0) {
-                return "OrderBy";
-            } else {
-                return "ThenBy";
-            }
-        }
+        private static (Expression, Type) GetPropertyLambda<T>(string propertyName, string arguments) {
+            var parameterExpression = Expression.Parameter(typeof(T), "x");
 
-        private static (Expression, Type) GetPropertyLambda<T>(string propertyName) {
-            var arg = Expression.Parameter(typeof(T), "x");
-            if (propertyName.Contains('.')) {
-                Expression body = arg;
-                var members = propertyName.Split('.');
+            Expression body = parameterExpression;
+            var propertyNames = propertyName.Split('.');
 
-                Type propertyType = typeof(T);
-                foreach (var subMember in members) {
-                    body = Expression.PropertyOrField(body, subMember);
+            Type type = typeof(T);
+            var pname = propertyName;
+            foreach (var name in propertyNames) {
+                body = Expression.PropertyOrField(body, name);
 
-                    var propertyInfo = propertyType.GetProperty(subMember);
-                    if (propertyInfo == null) {
-                        throw new ArgumentException("Sort property does not exist!");
-                    }
-
-                    propertyType = propertyInfo.PropertyType;
-                }
-
-                var conv = Expression.Convert(body, propertyType);
-                var exp = Expression.Lambda(conv, arg);
-                return (exp, propertyType);
-            } else {
-                var propertyInfo = typeof(T).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                var propertyInfo = type.GetProperty(name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
                 if (propertyInfo == null) {
                     throw new ArgumentException("Sort property does not exist!");
                 }
 
-                var propertyType = propertyInfo.PropertyType;
-                var property = Expression.Property(arg, propertyName);
-
-                //return the property as object
-                var conv = Expression.Convert(property, propertyType);
-                var exp = Expression.Lambda(conv, arg);
-                return (exp, propertyType);
-            }
-        }
-
-        public static IQueryable<T> OrderByDynamic<T>(this IQueryable<T> query, SortField sortField) {
-            var queryParameterExpression = Expression.Parameter(typeof(T), "x");
-            var orderByPropertyExpression = GetPropertyExpression(sortField.FieldName, queryParameterExpression);
-
-            Type orderByPropertyType = orderByPropertyExpression.Type;
-            LambdaExpression lambdaExpression = Expression.Lambda(orderByPropertyExpression, queryParameterExpression);
-
-            if (orderByPropertyType.IsEnum) {
-                orderByPropertyType = typeof(int);
-                lambdaExpression = GetExpressionForEnumOrdering<T>(lambdaExpression);
-            } else if (orderByPropertyType == typeof(bool)) {
-                orderByPropertyType = typeof(string);
-                lambdaExpression = GetExpressionForBoolOrdering(orderByPropertyExpression, queryParameterExpression);
+                type = propertyInfo.PropertyType;
+                pname = name;
             }
 
-            var orderByExpression = Expression.Call(
-                typeof(Queryable),
-                sortField.SortDirection == SortDirection.Ascending ? "OrderBy" : "OrderByDescending",
-                new Type[] { typeof(T), orderByPropertyType },
-                query.Expression,
-                Expression.Quote(lambdaExpression));
+            var propertyExpression = body;
+            if (type.IsEnum && string.Equals("ordinal", arguments, StringComparison.InvariantCultureIgnoreCase)) {
+                body = GetExpressionForEnumOrdering<T>(type, propertyExpression);
+                type = typeof(int);
+            } else if (type == typeof(bool) && string.Equals("truefirst", arguments, StringComparison.InvariantCultureIgnoreCase)) {
+                body = GetExpressionForBooleanOrdering(propertyExpression);
+                type = typeof(int);
+            } else if (type == typeof(string) && !string.IsNullOrWhiteSpace(arguments)) {
+                body = GetExpressionForStringOrdering(propertyExpression, arguments);
+                type = typeof(int);
+            }
 
-            return query.Provider.CreateQuery<T>(orderByExpression);
+            var conv = Expression.Convert(body, type);
+            var exp = Expression.Lambda(conv, parameterExpression);
+            return (exp, type);
         }
 
-        private static MemberExpression GetPropertyExpression(string propertyName, ParameterExpression queryParameterExpression) {
-            MemberExpression result = Expression.Property(queryParameterExpression, propertyName);
-            return result;
+        /// <summary>
+        /// https://stackoverflow.com/questions/40202415/order-by-enum-description
+        /// </summary>
+        /// <param name="parameterExpression"></param>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
+        private static Expression GetExpressionForStringOrdering(Expression parameterExpression, string arguments) {
+            var orderedValues = arguments.Split(';');
+            var body = orderedValues.Select((value, ordinal) => new { value, ordinal })
+                .Reverse()
+                .Aggregate((Expression)Expression.Constant(orderedValues.Length), (next, item) =>
+                    Expression.Condition(
+                        Expression.Equal(parameterExpression,
+                            Expression.Constant(item.value)),
+                        Expression.Constant(item.ordinal),
+                        next));
+
+            return body;
         }
 
-        private static Expression<Func<TSource, int>> GetExpressionForEnumOrdering<TSource>(LambdaExpression source) {
-            var enumType = source.Body.Type;
-            if (!enumType.IsEnum)
+        private static Expression GetExpressionForEnumOrdering<TSource>(Type type, Expression parameterExpression) {
+            if (!type.IsEnum) {
                 throw new InvalidOperationException();
+            }
 
-            var body = ((int[])Enum.GetValues(enumType))
-                .OrderBy(value => (int)value) // GetEnumDescription(value, enumType))
-                .Select((value, ordinal) => new { value, ordinal })
+            var orderedValues = ((int[])Enum.GetValues(type)).OrderBy(value => (int)value);
+            // TODO: value is the int value of the enum instead of the description -- which is unimportant as sorting by the enum in the database is just the column for string
+            var body = orderedValues.Select((value, ordinal) => new { value, ordinal })
                 .Reverse()
                 .Aggregate((Expression)null, (next, item) => next == null ? (Expression)
                     Expression.Constant(item.ordinal) :
                     Expression.Condition(
-                        Expression.Equal(source.Body, Expression.Convert(Expression.Constant(item.value), enumType)),
+                        Expression.Equal(parameterExpression, Expression.Convert(Expression.Constant(item.value), type)),
                         Expression.Constant(item.ordinal),
                         next));
 
-            return Expression.Lambda<Func<TSource, int>>(body, source.Parameters[0]);
+            return body;
         }
 
-        private static LambdaExpression GetExpressionForBoolOrdering(MemberExpression orderByPropertyExpression, ParameterExpression queryParameterExpression) {
-            var firstWhenActiveExpression = Expression.Condition(orderByPropertyExpression,
-                Expression.Constant("A"),
-                Expression.Constant("Z"));
+        private static Expression GetExpressionForBooleanOrdering(Expression propertyExpression) {
+            var body = Expression.Condition(propertyExpression,
+                Expression.Constant(0),
+                Expression.Constant(1));
 
-            return Expression.Lambda(firstWhenActiveExpression, new[] { queryParameterExpression });
+            return body;
         }
 
-        private static string GetEnumDescription(int value, Type enumType) {
-            if (!enumType.IsEnum)
-                throw new InvalidOperationException();
+        private static Expression GetExpressionForIndexOfOrdering(Expression parameterExpression, string arguments) {
+            // TODO: string.IndexOf does not translate to sql
+            var method = typeof(string).GetMethod("IndexOf", [typeof(string), typeof(StringComparison)]);
 
-            var name = Enum.GetName(enumType, value);
-            var field = enumType.GetField(name, BindingFlags.Static | BindingFlags.Public);
-            return field.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name;
+            Expression[] parms = [parameterExpression, Expression.Constant(StringComparison.OrdinalIgnoreCase)];
+            var call = Expression.Call(Expression.Constant(arguments), method, parms);
+
+            return call;
         }
     }
 }

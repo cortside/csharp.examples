@@ -36,15 +36,22 @@ namespace Relationships {
                 db.SaveChanges();
 
                 // Read
-                Console.WriteLine("Querying for an Order");
-                var sort = new SortField() { FieldName = "Status", SortDirection = SortDirection.Ascending };
-
+                Console.WriteLine("Querying for an Order - single");
                 var order = db.Orders
                     .Include(x => x.Address)
                     .Include(x => x.Items)
-                    .ToSortedQuery("Address.ZipCode,Status")
-                    //.OrderByDynamic(sort)
+                    .ToSortedQuery("Category|SAC;TIL;RIL;ZIP;YES,-Address.ZipCode,-Status,Status|Ordinal,-Notified|TrueFirst,Notified")
+                    .AsSingleQuery()
                     .First();
+
+                Console.WriteLine("Querying for an Order - split");
+                _ = db.Orders
+                    .Include(x => x.Address)
+                    .Include(x => x.Items)
+                    .ToSortedQuery("Category|SAC;TIL;RIL;ZIP;YES,-Address.ZipCode,-Status,Status|Ordinal,-Notified|TrueFirst,Notified")
+                    .AsSplitQuery()
+                    .First();
+
             }
         }
 

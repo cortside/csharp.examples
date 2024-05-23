@@ -43,6 +43,12 @@ namespace Relationships.Entities {
         [Comment("Date customer was last notified for order")]
         public DateTime? LastNotified { get; private set; }
 
+        [Comment("Was customer notified for order")]
+        public bool Notified { get; private set; }
+
+        [Comment("Customer categorization")]
+        public string Category { get; private set; }
+
         // expose items as a read only collection so that the collection cannot be manipulated without going through order
         private readonly List<OrderItem> items = [];
         public virtual IReadOnlyList<OrderItem> Items => items;
