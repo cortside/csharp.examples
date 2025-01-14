@@ -2,25 +2,10 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using CSharpExamples;
 
-namespace Relationships {
+namespace CSharpExamples {
     public static class Extensions {
-
-
-
-        //[ExpressionMethod("InImpl")]
-        //public static bool In<T>(this T item, IEnumerable<T> items) {
-        //    return items.Contains(item); // this code will run if we execute the method locally
-        //}
-
-        //public static Expression<Func<T, IEnumerable<T>, bool>> InImpl<T>() {
-        //    // LINQ to DB will translate this expression into SQL
-        //    // (it knows out of the box how to translate Contains()
-        //    return (item, items) => items.Contains(item);
-        //}
-
-
-
         public static IQueryable<T> ToPagedQuery<T>(this IQueryable<T> query, int page, int pageSize, int skipAdditionalRowsCount = 0) {
             return query.Skip(pageSize * (page - 1) + skipAdditionalRowsCount).Take(pageSize);
         }
@@ -133,11 +118,11 @@ namespace Relationships {
                 throw new InvalidOperationException();
             }
 
-            var orderedValues = ((int[])Enum.GetValues(type)).OrderBy(value => (int)value);
+            var orderedValues = ((int[])Enum.GetValues(type)).OrderBy(value => value);
             // TODO: value is the int value of the enum instead of the description -- which is unimportant as sorting by the enum in the database is just the column for string
             var body = orderedValues.Select((value, ordinal) => new { value, ordinal })
                 .Reverse()
-                .Aggregate((Expression)null, (next, item) => next == null ? (Expression)
+                .Aggregate((Expression)null, (next, item) => next == null ?
                     Expression.Constant(item.ordinal) :
                     Expression.Condition(
                         Expression.Equal(parameterExpression, Expression.Convert(Expression.Constant(item.value), type)),

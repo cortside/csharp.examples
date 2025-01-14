@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Entities;
+using CSharpExamples;
+using CSharpExamples.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Relationships.Data;
-using Relationships.Entities;
 
-namespace Relationships {
+namespace CSharpExamples {
     /// <summary>
     /// Program
     /// </summary>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Relationships.Entities {
+namespace Common.Entities {
     [Table("Item")]
     public class Item {
         public Item(string sku, string description, decimal unitPrice) {

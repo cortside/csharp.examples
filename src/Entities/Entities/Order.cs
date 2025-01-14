@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Common.Enumerations;
 using Microsoft.EntityFrameworkCore;
-using Relationships.Enumerations;
 
-namespace Relationships.Entities {
-    [Microsoft.EntityFrameworkCore.Index(nameof(OrderResourceId), IsUnique = true)]
+namespace Common.Entities {
+    [Index(nameof(OrderResourceId), IsUnique = true)]
     [Table("Order")]
     [Comment("Orders")]
     public class Order {

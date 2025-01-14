@@ -9,7 +9,7 @@ dotnet ef database update
 
 To create the migration and generate the sql
 ```powershell
-cd src/EntityFrameworkCore
+cd src/CSharpExamples
 
 rm sql -Force -Recurse
 rm Relationships\Migrations -Force -Recurse

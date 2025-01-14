@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Relationships.Entities {
+namespace Common.Entities {
     [Table("OrderItem")]
     [Comment("Items that belong to an Order")]
     public class OrderItem {

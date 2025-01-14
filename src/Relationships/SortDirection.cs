@@ -1,4 +1,4 @@
-﻿namespace Relationships {
+﻿namespace CSharpExamples {
     public enum SortDirection {
         Ascending,
         Descending

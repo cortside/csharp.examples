@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Relationships.Entities {
+namespace Common.Entities {
     [Table("Address")]
     public class Address {
         protected Address() { }

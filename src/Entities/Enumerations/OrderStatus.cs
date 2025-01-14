@@ -1,4 +1,4 @@
-﻿namespace Relationships.Enumerations {
+﻿namespace Common.Enumerations {
     public enum OrderStatus {
         Created,
         Paid,

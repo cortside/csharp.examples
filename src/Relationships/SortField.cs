@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Relationships {
+namespace CSharpExamples {
     public class SortField {
         public SortField(string sortParameter) {
             string direction = sortParameter.Trim()[..1];

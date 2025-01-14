@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Relationships.Entities {
+namespace Common.Entities {
     [Table("Supplier")]
     public class Supplier {
         public Supplier(string name) {

@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Relationships.Entities {
+namespace Common.Entities {
     [Table("Customer")]
     public class Customer {
         public Customer(string firstName, string lastName, string email) {

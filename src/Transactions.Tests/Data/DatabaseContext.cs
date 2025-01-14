@@ -1,11 +1,22 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Common.Entities;
+using Cortside.DomainEvent.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Relationships.Entities;
 
-namespace Relationships.Data {
+namespace CSharpExamples.Data {
+    // db context from uowcontext
+    // with outbox
+    // customer entity
+    // publish message with customerId
+    // test with theory
+    // check that message is published with customer created
+    // check that no customer, no message
+
+    // should this be in shoppingcart-api???
+
     public class DatabaseContext : DbContext {
         private readonly ILoggerFactory loggerFactory;
 
@@ -13,13 +24,11 @@ namespace Relationships.Data {
             this.loggerFactory = loggerFactory ?? new NullLoggerFactory();
         }
 
-        public DbSet<Supplier> Suppliers { get; set; }
-        public DbSet<Item> Items { get; set; }
         public DbSet<Customer> Customers { get; set; }
-        public DbSet<Order> Orders { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-            var connectionString = "Data Source=.;Initial Catalog=EFCore;Integrated Security=True;TrustServerCertificate=true;";
+            var connectionString =
+                "Data Source=.;Initial Catalog=EFCore;Integrated Security=True;TrustServerCertificate=true;";
             optionsBuilder.UseSqlServer(connectionString, sqlOptions => {
                 // instruct ef to use multiple queries instead of large joined queries
                 sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
@@ -31,6 +40,8 @@ namespace Relationships.Data {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
+            modelBuilder.AddDomainEventOutbox();
+
             DisableCascadeDelete(modelBuilder);
 
             // unidirectional many to many without suppliers having an items property
@@ -51,7 +62,7 @@ namespace Relationships.Data {
                         .HasForeignKey("ItemId")
                         .HasConstraintName("FK_ItemSupplier_ItemId")
                         .OnDelete(DeleteBehavior.NoAction)
-                    );
+                );
         }
 
         protected static void DisableCascadeDelete(ModelBuilder modelBuilder) {
