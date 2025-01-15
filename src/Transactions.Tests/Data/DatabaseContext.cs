@@ -30,6 +30,7 @@ namespace CSharpExamples.Data {
             var connectionString =
                 "Data Source=.;Initial Catalog=EFCore;Integrated Security=True;TrustServerCertificate=true;";
             optionsBuilder.UseSqlServer(connectionString, sqlOptions => {
+                sqlOptions.EnableRetryOnFailure(3);
                 // instruct ef to use multiple queries instead of large joined queries
                 sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
