@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Common.Enumerations;
 
-namespace CSharpExamples {
+namespace Relationships.Tests {
     public class UnitTest1 {
         [Fact]
         public void Test1() {

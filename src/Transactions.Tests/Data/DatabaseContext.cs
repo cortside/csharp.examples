@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace CSharpExamples.Data {
+namespace Transactions.Tests.Data {
     // db context from uowcontext
     // with outbox
     // customer entity

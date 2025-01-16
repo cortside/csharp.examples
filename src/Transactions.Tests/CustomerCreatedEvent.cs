@@ -1,4 +1,4 @@
-﻿namespace CSharpExamples {
+﻿namespace Transactions.Tests {
     public class CustomerCreatedEvent {
         public CustomerCreatedEvent(int customerId) {
             CustomerId = customerId;

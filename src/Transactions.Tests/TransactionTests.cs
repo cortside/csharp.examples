@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 using Common.Entities;
 using Cortside.DomainEvent;
 using Cortside.DomainEvent.EntityFramework;
-using CSharpExamples.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using Transactions.Tests.Data;
 using Xunit;
 
-namespace CSharpExamples {
+namespace Transactions.Tests {
     public class TransactionTests {
         private DatabaseContext db;
 
