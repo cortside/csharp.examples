@@ -19,7 +19,7 @@ jobs:
         - name: Install dependencies
           run: dotnet restore src
         - name: Test with dotnet
-          run: dotnet test src --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
+          run: dotnet test src/Relationships.Tests --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
         - name: Upload dotnet test results
           uses: actions/upload-artifact@v4
           with:
