@@ -15,16 +15,16 @@ namespace WeatherForecast.WebApi.Controllers {
     [ApiVersion("1")]
     [Produces("application/json")]
     [Route("api/v{version:apiVersion}/forecasts")]
-    public class WeatherForecastController : ControllerBase {
+    public class ForecastController : ControllerBase {
         private static readonly string[] Summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 
-        private readonly ILogger<WeatherForecastController> logger;
+        private readonly ILogger<ForecastController> logger;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="logger"></param>
-        public WeatherForecastController(ILogger<WeatherForecastController> logger) {
+        public ForecastController(ILogger<ForecastController> logger) {
             this.logger = logger;
         }
 

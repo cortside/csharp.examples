@@ -30,8 +30,7 @@ namespace Transactions.Tests {
             // strategy is needed because of sql option to retry on failure.  if that is not enabled, a strategy for a user initiated transaction is not needed
             var strategy = db.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () => {
-                await using (var dbContextTransaction =
-                             await db.Database.BeginTransactionAsync().ConfigureAwait(false)) {
+                await using (var dbContextTransaction = await db.Database.BeginTransactionAsync().ConfigureAwait(false)) {
                     try {
                         db.Customers.Add(customer);
                         await db.SaveChangesAsync().ConfigureAwait(false);
@@ -54,7 +53,6 @@ namespace Transactions.Tests {
                             Topic = "shoppingcart.",
                             Durable = 1,
                             Credits = 5
-
                         };
                         var publisher = new DomainEventOutboxPublisher<DatabaseContext>(settings, db,
                             NullLogger<DomainEventOutboxPublisher<DatabaseContext>>.Instance);
