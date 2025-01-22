@@ -35,6 +35,7 @@ jobs:
         - name: Test with dotnet
           run: |
             echo '{"Database":{"ConnectionString":"Data Source=localhost;Initial Catalog=EFCore;user id=sa;password=password1@;TrustServerCertificate=True;"}}' > src/Relationships.Tests/appsettings.local.json
+            cp src/Relationships.Tests/appsettings.local.json src/Relationships/appsettings.local.json
             cp src/Relationships.Tests/appsettings.local.json src/Transactions.Tests/appsettings.local.json
             dotnet test src --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
         - name: Upload dotnet test results
