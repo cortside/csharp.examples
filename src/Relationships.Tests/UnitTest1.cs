@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Common.Enumerations;
+using Xunit;
 
 namespace Relationships.Tests {
     public class UnitTest1 {

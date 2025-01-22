@@ -3,6 +3,7 @@ using System.Linq;
 using Common.Entities;
 using Cortside.DomainEvent.EntityFramework;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -27,8 +28,13 @@ namespace Transactions.Tests.Data {
         public DbSet<Customer> Customers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-            var connectionString =
-                "Data Source=.;Initial Catalog=EFCore;Integrated Security=True;TrustServerCertificate=true;";
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", false, false)
+                .AddJsonFile("appsettings.local.json", true, false)
+                .AddEnvironmentVariables()
+                .Build();
+
+            var connectionString = config["Database:ConnectionString"];
             optionsBuilder.UseSqlServer(connectionString, sqlOptions => {
                 sqlOptions.EnableRetryOnFailure(3);
                 // instruct ef to use multiple queries instead of large joined queries

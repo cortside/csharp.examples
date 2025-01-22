@@ -35,8 +35,4 @@
     <ProjectReference Include="..\Relationships\Relationships.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
-
 </Project>

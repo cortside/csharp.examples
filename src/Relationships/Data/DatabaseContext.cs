@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Common.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -19,7 +20,12 @@ namespace CSharpExamples.Data {
         public DbSet<Order> Orders { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-            var connectionString = "Data Source=.;Initial Catalog=EFCore;Integrated Security=True;TrustServerCertificate=true;";
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", false, false)
+                .AddJsonFile("appsettings.local.json", true, false)
+                .Build();
+
+            var connectionString = config["Database:ConnectionString"];
             optionsBuilder.UseSqlServer(connectionString, sqlOptions => {
                 // instruct ef to use multiple queries instead of large joined queries
                 sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
