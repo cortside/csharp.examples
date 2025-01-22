@@ -10,16 +10,21 @@ jobs:
       matrix:
         dotnet-version: [ '8.0.x' ]
 
-    services:
-      mssql:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        env:
-          SA_PASSWORD: password1@
-          ACCEPT_EULA: 'Y'
-        ports:
-          - 1433:1433
+#    services:
+#      mssql:
+#        image: mcr.microsoft.com/mssql/server:2022-latest
+#        env:
+#          SA_PASSWORD: password1@
+#          ACCEPT_EULA: 'Y'
+#        ports:
+#          - 1433:1433
 
     steps:
+        - name: start sql
+          shell: bash
+          run: |
+                docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=password1@' -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
+                sleep 30
         - uses: actions/checkout@v4
         - name: Setup dotnet
           uses: actions/setup-dotnet@v3
